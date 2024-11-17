@@ -1,0 +1,20 @@
+{
+  "name": "blockchain-cert",
+  "version": "1.0.0",
+  "description": "blockchain based electronic certificate",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "blockchain",
+    "solidity",
+    "vite"
+  ],
+  "author": "Agung Adhinata",
+  "license": "MIT",
+  "workspaces": [
+    "./certificate-backend",
+    "./frontend"
+  ]
+}
