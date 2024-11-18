@@ -1,0 +1,1 @@
+import CertitcationContract from "@blockchain-cert/backend/artifacts/contracts/Certification.sol/Certification.json"
