@@ -6,7 +6,11 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       chainId: 1337,
+    },
+    ganache: {
+      url: "HTTP://127.0.0.1:7545",
     }
+    
   }
 };
 
