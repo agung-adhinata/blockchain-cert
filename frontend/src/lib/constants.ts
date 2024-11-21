@@ -1,3 +1,3 @@
 
 
-export const APP_TITLE = "E-Certos"
+export const APP_TITLE = "E-Certificate"

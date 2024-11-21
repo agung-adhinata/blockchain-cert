@@ -1,6 +1,9 @@
 "use client";
 
+import { AccountBarLogin } from "@/components/custom/account-header";
+import { Button } from "@/components/ui/button";
 import { APP_TITLE } from "@/lib/constants";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function Page() {
@@ -10,7 +13,7 @@ export default function Page() {
   async function setupWeb3() {
     console.log("Setup Ethereum");
     if (typeof window === "undefined") {
-      console.warn(`WIndow is missing, aborting...`);
+      console.warn(`Window is missing, aborting...`);
       return;
     }
     if (!window.ethereum) {
@@ -36,24 +39,25 @@ export default function Page() {
   }, [startup]);
 
   return (
-    <div>
-      <header className="flex gap-2">
-        {chainId.length > 0 ? (
-          <>
-            <p>{chainId}</p>
-            <p>acc ID: {accountId}</p>
-          </>
+    <div className="w-full h-screen flex flex-col">
+      <header className="flex bg-gray-200 gap-2 p-4 w-full justify-end">
+        {accountId.length > 0 ? (
+          <div>{accountId}</div>
         ) : (
-          <button
-            onClick={() => {
-              setupWeb3();
-            }}
-          >
-            <p>Connect to metamask</p>
-          </button>
+          <AccountBarLogin onClick={() => setupWeb3()} />
         )}
       </header>
-      <h1>{APP_TITLE}</h1>
+      <section className="flex-grow flex flex-col gap-4 items-center justify-center">
+        <h1 className="font-bold text-4xl font-mono uppercase">{APP_TITLE}</h1>
+        <div className="flex gap-3">
+          <Button asChild>
+            <Link href={"/profile"}>Profile</Link>
+          </Button>
+          <Button variant={"outline"} asChild>
+            <Link href={"/about"}>About</Link>
+          </Button>
+        </div>
+      </section>
     </div>
   );
 }
