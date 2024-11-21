@@ -40,18 +40,11 @@ export default function Page() {
 
   return (
     <div className="w-full h-screen flex flex-col">
-      <header className="flex bg-gray-200 gap-2 p-4 w-full justify-end">
-        {accountId.length > 0 ? (
-          <div>{accountId}</div>
-        ) : (
-          <AccountBarLogin onClick={() => setupWeb3()} />
-        )}
-      </header>
       <section className="flex-grow flex flex-col gap-4 items-center justify-center">
         <h1 className="font-bold text-4xl font-mono uppercase">{APP_TITLE}</h1>
         <div className="flex gap-3">
           <Button asChild>
-            <Link href={"/profile"}>Profile</Link>
+            <Link href={"/app"}>Go to application</Link>
           </Button>
           <Button variant={"outline"} asChild>
             <Link href={"/about"}>About</Link>

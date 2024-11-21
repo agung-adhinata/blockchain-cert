@@ -8,11 +8,11 @@ export function AccountBarLogin({onClick}:{onClick: () => void}) {
     )
 }
 
-export function AccountBarConnected() {
+export function AccountBarConnected({accountId}:{accountId: string}) {
     return(
         <div className="flex items-center gap-2">
             <button className="p-2 rounded bg-gray-100 hover:bg-gray-200">
-                <span className="text-sm">0x1234...5678</span>
+                <span className="text-sm">{accountId}</span>
             </button>
             <button className="p-2 rounded bg-gray-100 hover:bg-gray-200">
                 <span className="text-sm">Disconnect</span>
