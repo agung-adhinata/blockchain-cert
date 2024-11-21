@@ -15,6 +15,7 @@
   "license": "MIT",
   "workspaces": [
     "backend",
-    "frontend"
+    "frontend",
+    "truffle"
   ]
 }
