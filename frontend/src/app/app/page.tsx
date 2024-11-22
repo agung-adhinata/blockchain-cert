@@ -1,27 +1,29 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { BlockchainContext, ethersContext } from "@/layout/EthersContext";
+import { ethersContext } from "@/layout/EthersContext";
 import Link from "next/link";
 import { useContext, useEffect } from "react";
 
 export default function AppPage() {
-  const blockchainContext = useContext(ethersContext) as BlockchainContext;
+  const blockchainContext = useContext(ethersContext);
   useEffect(() => {
+    if (!blockchainContext) return;
     if (typeof window.ethereum !== "undefined") {
       try {
-        (async () => {
-          const certificates =
-            blockchainContext.contract?.getSignedCertificatesByOwner(
-              blockchainContext.signer?.getAddress()
-            );
-          console.log(certificates);
-        })();
+        window.ethereum.enable().then(async () => {
+          const signer = await blockchainContext.provider.getSigner();
+          console.log(signer);
+          const certificate = await blockchainContext.contract.getCertificates(
+            await signer.getAddress()
+          );
+          console.log(certificate)
+        });
       } catch (e) {
         console.error(e);
       }
     }
-  }, [blockchainContext.contract, blockchainContext.signer]);
+  }, [blockchainContext]);
 
   return (
     <div className="w-full h-full flex flex-col justify-center items-center bg-slate-300">

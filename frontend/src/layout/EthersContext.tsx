@@ -2,7 +2,7 @@
 import { CertificationABI, CertificationAddress } from "@/lib/etherContext";
 import { BrowserProvider } from "ethers";
 import { ethers } from "ethers";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useCallback, useEffect, useState } from "react";
 
 // Certificate struct type
 interface Certificate {
@@ -54,6 +54,7 @@ export type BlockchainContext = {
   provider: BrowserProvider;
   signer: ethers.JsonRpcSigner | ethers.Signer;
   contract: CertificationContract;
+  connect: (signer: ethers.Signer) => CertificationContract;
 };
 
 export const ethersContext = createContext<BlockchainContext | undefined>(
@@ -68,16 +69,36 @@ export function EthersProvider({
   const [context, setContext] = useState<BlockchainContext | undefined>();
   const [startup, setStartup] = useState(true);
 
-  async function setupBlockchainContext(ethereum: ethers.Eip1193Provider) {
-    const provider = new ethers.BrowserProvider(ethereum);
-    const signer = await provider.getSigner();
-    const contract = new ethers.Contract(
-      CertificationAddress,
-      CertificationABI.abi,
-      provider
-    ) as CertificationContract;
-    setContext({ provider, signer, contract });
-  }
+  const setupBlockchainContext = useCallback(
+    async function setupBlockchainContext(ethereum: ethers.Eip1193Provider) {
+      const provider = new ethers.BrowserProvider(ethereum);
+      const signer = await provider.getSigner();
+
+      const contract = new ethers.Contract(
+        CertificationAddress,
+        CertificationABI.abi,
+        provider
+      ) as CertificationContract;
+
+      console.log("Contract", contract);
+      setContext({
+        provider,
+        signer,
+        contract,
+        connect(signer) {
+          const newContract = new ethers.Contract(
+            CertificationAddress,
+            CertificationABI.abi,
+            signer
+          ) as CertificationContract;
+          return newContract;
+        },
+      });
+    },
+    []
+  );
+
+
 
   useEffect(() => {
     if (startup) {
@@ -90,7 +111,7 @@ export function EthersProvider({
         }
       }
     }
-  }, [startup, context]);
+  }, [startup, context, setupBlockchainContext]);
   return (
     <ethersContext.Provider value={context}>{children}</ethersContext.Provider>
   );

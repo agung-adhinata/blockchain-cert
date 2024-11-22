@@ -2,8 +2,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ethersContext } from "@/layout/EthersContext";
 import { useForm } from "@mantine/form";
+import { useContext } from "react";
 export default function CreatePage() {
+
+  const etherContext = useContext(ethersContext);
   const form = useForm({
     mode: "controlled",
     initialValues: {
@@ -17,8 +21,20 @@ export default function CreatePage() {
       <section className="p-4 flex flex-col gap-3 rounded min-w-96 bg-slate-200 shadow">
         <h1 className="text-3xl font-bold">New Certificate</h1>
         <form
-          onSubmit={form.onSubmit((values) => {
+          onSubmit={form.onSubmit(async (values) => {
             console.log(values);
+            if (!etherContext) return;
+            console.log("signing...")
+            const signer = await etherContext.provider.getSigner();
+            const contract = etherContext.connect(signer)
+            contract.signCertificate(
+              "0x" + Math.floor(Math.random() * 100000000).toString(16),
+              "ipfsHash",
+              values.title,
+              values.description
+            );
+            
+            console.log("signing... done")
           })}
           className="flex flex-col gap-2"
         >
@@ -44,7 +60,6 @@ export default function CreatePage() {
               key={form.key("file")}
               id="file-upload"
               type="file"
-              value={form.values.file?.name || ""}
               onChange={(e) => {
                 console.log(e.target.files?.[0]);
                 form.setFieldValue("file", e.target.files?.[0] || undefined);

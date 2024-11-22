@@ -1,4 +1,4 @@
-import certification from "@blockchain-cert/truffle/build/contracts/Certification.json"
+import certification from "@blockchain-cert/backend/artifacts/contracts/Certification.sol/Certification.json"
 
 
 export const CertificationABI = certification
