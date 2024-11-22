@@ -2,12 +2,17 @@ import { Route, Routes } from "react-router";
 import HomeScreen from "@/screens/HomeScreen";
 import "./main.css";
 import CertificatesScreen from "./screens/CertificatesScreen";
+import CreateCertificateScreen from "./screens/CreateCertificateScreen";
 
 function App() {
   return (
     <Routes>
       <Route index element={<HomeScreen />} />
-      <Route path="/certificate" element={<CertificatesScreen />} />
+      <Route path="/certificates" element={<CertificatesScreen />} />
+      <Route
+        path="/certificates/create"
+        element={<CreateCertificateScreen />}
+      />
       <Route
         path="*"
         element={

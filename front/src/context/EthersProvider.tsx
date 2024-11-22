@@ -18,18 +18,23 @@ export function EthersProvider({
 
   const setupBlockchainContext = useCallback(
     async function setupBlockchainContext(ethereum: ethers.Eip1193Provider) {
-      const provider = new ethers.BrowserProvider(ethereum);
-      const signer = await provider.getSigner();
-      const newContract = new ethers.Contract(
-        CONTRACT_ADDRESS,
-        CertificationJSON.abi,
-        signer
-      ) as CertificationContract;
+      try {
+        const provider = new ethers.BrowserProvider(ethereum);
+        const signer = await provider.getSigner();
+        const newContract = new ethers.Contract(
+          CONTRACT_ADDRESS,
+          CertificationJSON.abi,
+          signer
+        ) as CertificationContract;
+  
+        setContext({
+          provider,
+          contract: newContract,
+        });
 
-      setContext({
-        provider,
-        contract: newContract,
-      });
+      } catch (e) {
+        console.error(e);
+      }
     },
     []
   );
