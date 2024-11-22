@@ -15,8 +15,7 @@
   "license": "MIT",
   "workspaces": [
     "backend",
-    "frontend",
-    "truffle"
+    "frontend"
   ],
   "devDependencies": {
     "ts-node": "^10.9.2"

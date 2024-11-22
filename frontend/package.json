@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@blockchain-cert/backend": "file:../backend",
-    "@blockchain-cert/truffle": "file:../truffle",
     "@ethersproject/providers": "^5.7.2",
     "@mantine/form": "^7.14.1",
     "@metamask/providers": "^18.1.1",
