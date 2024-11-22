@@ -1,68 +1,79 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-contract Certification {
-   // track informasi sertifikat
-    struct Certificate {
-        string rootId; // id awal sertifikat (root)
-        string id; // id versi sertifikat saat ini (newer)
-        string previousId; // referensi id 1 versi sebelumnya (newer - 1)
-        address signedBy; // alamat pengguna yang menandatangani sertifikat
-        string ipfsHash; // IPFS hash dalam menyimpan file sertifkat
-        uint256 timestamp; // waktu perubahan / pembuatan
-        string title; // judul sertifikat
-        string description; // deskripsi sertifikat
-    }
+/// @title Certification Contract Struct
+/// @author Agung Adhinata
+/// @notice Mengatur struktur data sertifikat dan fungsi-fungsi yang berhubungan dengan sertifikat
+struct Certificate {
+    string id; // id versi sertifikat saat ini (newer)
+    string rootId; // id awal sertifikat (root)
+    string prevId; // referensi id 1 versi sebelumnya (newer - 1)
+    address signedBy; // alamat pengguna yang menandatangani sertifikat
+    string ipfsHash; // IPFS hash dalam menyimpan file sertifkat
+    uint256 timestamp; // waktu perubahan / pembuatan
+    string title; // judul sertifikat
+    string description; // deskripsi sertifikat
+}
 
-    // sertifikat berdasarkan ID (root, newer, maupun newer - 1)
+contract Certification {
+    // map sertifikat berdasarkan ID
     mapping(string => Certificate) public certificatesById;
 
-    // map yang berfungsi dalam mencatat versi terbaru sertifikat menggunakan id paling awal (init)
+    // map sertifikat terbaru berdasarkan rootId
     mapping(string => string) public latestCertificateIdByRootId;
 
-    // menyimpan daftar sertifikat yang sudah dibuat oleh signatureOwner (root ID only)
-    mapping(address => string[]) public signedCertificateIdsByAddress;
+    // map id sertifikat yang ditandatangani oleh alamat signer (hanya menyimpan root id)
+    mapping(address => string[]) public certificateRootIdsBySignedAddress;
 
     // Event to log certificate creation and updates
     event CertificateSigned(
-        string id,
-        string rootId,
-        string previousId,
-        address signedBy,
+        string indexed id,
+        string indexed rootId,
+        string prevId,
+        address indexed signedBy,
         string ipfsHash,
         uint256 timestamp
     );
 
     // buat sertifikat baru. fungsi ini tidak akan bekerja bagi sertifikat yang sudah dibuat sebelumnya
+    /// @notice membaut sertifikat menggunakan validasi dan logging
+    /// @param _id ID sertifikat
+    /// @param _ipfsHash IPFS hash, menyimpan file sertifikat
+    /// @param _title judul sertifikat
+    /// @param _description deskripsi sertifikat
     function signCertificate(
         string memory _id,
         string memory _ipfsHash,
         string memory _title,
         string memory _description
     ) public {
-        require(bytes(_id).length > 0, "Certificate ID must not be empty");
-        require(bytes(_ipfsHash).length > 0, "IPFS hash must not be empty");
+        require(bytes(_id).length > 0, "Certificate: ID cannot be empty");
+        require(
+            bytes(_ipfsHash).length > 0,
+            "Certificate: IPFS hash cannot be empty"
+        );
+        require(bytes(_title).length > 0, "Certificate: Title cannot be empty");
         require(
             certificatesById[_id].timestamp == 0,
-            "Certificate ID already exists"
+            "Certificate: ID already exists"
         );
-
-        // Create and store the certificate
-        certificatesById[_id] = Certificate({
+        Certificate memory cert = Certificate({
             id: _id,
             rootId: _id,
             signedBy: msg.sender,
             ipfsHash: _ipfsHash,
-            previousId: "",
+            prevId: "",
             timestamp: block.timestamp,
             title: _title,
             description: _description
         });
+        // simpan sertifikat
+        certificatesById[_id] = cert;
 
-        // Update the latest version tracker
+        // update map sertifikat terbaru
         latestCertificateIdByRootId[_id] = _id;
-
-        signedCertificateIdsByAddress[msg.sender].push(_id);
+        // update map sertifikat yang ditandatangani oleh alamat signer (root id)
+        certificateRootIdsBySignedAddress[msg.sender].push(_id);
 
         // Emit an event for logging
         emit CertificateSigned(
@@ -75,7 +86,7 @@ contract Certification {
         );
     }
 
-    // Function to edit a certificate
+    // ubah sertifikat yang sudah ada
     function editCertificate(
         string memory _rootId,
         string memory _newId,
@@ -83,41 +94,57 @@ contract Certification {
         string memory _title,
         string memory _description
     ) public {
+        // Input validation
         require(
             bytes(_newId).length > 0,
-            "New certificate ID must not be empty"
+            "Certificate: New ID cannot be empty"
         );
-        require(bytes(_rootId).length > 0, "Original ID must not be empty");
-        require(bytes(_ipfsHash).length > 0, "IPFS hash must not be empty");
+        require(
+            bytes(_rootId).length > 0,
+            "Certificate: Root ID cannot be empty"
+        );
+        require(
+            bytes(_ipfsHash).length > 0,
+            "Certificate: IPFS hash cannot be empty"
+        );
+        require(
+            bytes(_title).length > 0,
+            "Certificate: Title cannot be empty or null"
+        );
 
-        // Ensure the original certificate exists
+        // pastikan sertifikat asli ditemukan sebelum melakukan perubahan
         string memory currentId = latestCertificateIdByRootId[_rootId];
         require(bytes(currentId).length > 0, "Original certificate not found");
-        // ensure that this is the same owner
-        Certificate memory cert = certificatesById[_rootId];
-        require(cert.signedBy != msg.sender, "owner is not same");
 
-        // Ensure the new ID does not already exist
+        // pastikan hanya owner yang sama yang dapat mengubah sertifikat ini
+        Certificate memory currentCert = certificatesById[_rootId];
+        require(
+            currentCert.signedBy != msg.sender,
+            "Only owner can edit existing certificate"
+        );
+
+        // pastikan ID baru belum digunakan
         require(
             certificatesById[_newId].timestamp == 0,
             "New certificate ID already exists"
         );
 
-        // Create and store the new version of the certificate
-        certificatesById[_newId] = Certificate({
+        // Create new version
+        Certificate memory newCertificate = Certificate({
             id: _newId,
             rootId: _rootId,
+            prevId: currentId,
             signedBy: msg.sender,
             ipfsHash: _ipfsHash,
-            previousId: currentId,
             timestamp: block.timestamp,
             title: _title,
             description: _description
         });
 
-        // Update the latest version tracker
+        // update sertifikat
+        certificatesById[_newId] = newCertificate;
+        // Update latest certificate
         latestCertificateIdByRootId[_rootId] = _newId;
-
         // Emit an event for logging
         emit CertificateSigned(
             _newId,
@@ -131,31 +158,33 @@ contract Certification {
 
     // Function to retrieve the latest version of a certificate
     function getLatestCertificate(
-        string memory _originalId
+        string memory _rootId
     ) public view returns (Certificate memory) {
-        string memory latestId = latestCertificateIdByRootId[_originalId];
+        string memory latestId = latestCertificateIdByRootId[_rootId];
         require(bytes(latestId).length > 0, "Certificate not found");
         return certificatesById[latestId];
     }
 
     //mendapat sertifikat berdasarkan id
-    function getCertificateById(
+    function getCertificate(
         string memory _certId
-    ) public view returns (Certificate memory){
-        require(bytes(_certId).length >0, "This field bust not empty");
+    ) public view returns (Certificate memory) {
+        require(bytes(_certId).length > 0, "This field bust not empty");
         return certificatesById[_certId];
     }
 
-    function getSignedCertificatesByOwner(
-        address _owner
+    function getCertificates(
+        address _signedAddressOwner
     ) public view returns (Certificate[] memory) {
-        string[] memory signedCertIds = signedCertificateIdsByAddress[_owner];
+        string[] memory signedCertIds = certificateRootIdsBySignedAddress[_signedAddressOwner];
         Certificate[] memory latestCertificates = new Certificate[](
             signedCertIds.length
         );
 
         for (uint256 i = 0; i < signedCertIds.length; i++) {
-            string memory latestId = latestCertificateIdByRootId[signedCertIds[i]];
+            string memory latestId = latestCertificateIdByRootId[
+                signedCertIds[i]
+            ];
             latestCertificates[i] = certificatesById[latestId];
         }
         return latestCertificates;
@@ -175,7 +204,7 @@ contract Certification {
         string memory currentId = latestCertificateIdByRootId[_initialId];
         while (bytes(currentId).length > 0) {
             count++;
-            currentId = certificatesById[currentId].previousId;
+            currentId = certificatesById[currentId].prevId;
         }
 
         // Retrieve all versions
@@ -183,7 +212,7 @@ contract Certification {
         currentId = latestCertificateIdByRootId[_initialId];
         for (uint256 i = count; i > 0; i--) {
             history[i - 1] = certificatesById[currentId];
-            currentId = certificatesById[currentId].previousId;
+            currentId = certificatesById[currentId].prevId;
         }
 
         return history;
