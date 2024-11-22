@@ -14,7 +14,7 @@ export default function AppPage() {
         window.ethereum.enable().then(async () => {
           const signer = await blockchainContext.provider.getSigner();
           console.log(signer);
-          const certificate = await blockchainContext.contract.getCertificates(
+          const certificate = await blockchainContext.connect(signer).getCertificates(
             await signer.getAddress()
           );
           console.log(certificate)

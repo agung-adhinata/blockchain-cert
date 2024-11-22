@@ -52,8 +52,6 @@ type CertificationContract = ethers.Contract & HardhatContractMethods;
 
 export type BlockchainContext = {
   provider: BrowserProvider;
-  signer: ethers.JsonRpcSigner | ethers.Signer;
-  contract: CertificationContract;
   connect: (signer: ethers.Signer) => CertificationContract;
 };
 
@@ -72,19 +70,9 @@ export function EthersProvider({
   const setupBlockchainContext = useCallback(
     async function setupBlockchainContext(ethereum: ethers.Eip1193Provider) {
       const provider = new ethers.BrowserProvider(ethereum);
-      const signer = await provider.getSigner();
 
-      const contract = new ethers.Contract(
-        CertificationAddress,
-        CertificationABI.abi,
-        provider
-      ) as CertificationContract;
-
-      console.log("Contract", contract);
       setContext({
         provider,
-        signer,
-        contract,
         connect(signer) {
           const newContract = new ethers.Contract(
             CertificationAddress,
@@ -97,8 +85,6 @@ export function EthersProvider({
     },
     []
   );
-
-
 
   useEffect(() => {
     if (startup) {
