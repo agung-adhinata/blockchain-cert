@@ -14,29 +14,32 @@ type FormData = {
 export default function CreateCertificateScreen() {
   const etherContext = useContext(ethersContext);
   const { register, handleSubmit } = useForm<FormData>();
+
+  const onSubmit = handleSubmit(
+    async (val) => {
+      console.log(val);
+      const { title, description, file } = val;
+      const filename = file[0].name;
+
+      etherContext?.contract.signCertificate(
+        "0x123" + Math.random().toString(),
+        filename,
+        title,
+        description
+      );
+      console.log("Certificate created");
+    },
+    (val) => {
+      console.log(val);
+    }
+  );
+
   return (
     <div>
       <h1>Create Certificate Screen</h1>
 
       <form
-        onSubmit={handleSubmit(
-          async (val) => {
-            console.log(val);
-            const { title, description, file } = val;
-            const filename = file[0].name;
-
-            etherContext?.contract.signCertificate(
-              "0x123",
-              filename,
-              title,
-              description
-            );
-            console.log("Certificate created");
-          },
-          (val) => {
-            console.log(val);
-          }
-        )}
+        onSubmit={onSubmit}
       >
         <div className="flex flex-col">
           <Label htmlFor="title">Title</Label>
