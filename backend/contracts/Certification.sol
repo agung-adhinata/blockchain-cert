@@ -176,7 +176,12 @@ contract Certification {
     function getCertificates(
         address _signedAddressOwner
     ) public view returns (Certificate[] memory) {
-        string[] memory signedCertIds = certificateRootIdsBySignedAddress[_signedAddressOwner];
+        string[] memory signedCertIds = certificateRootIdsBySignedAddress[
+            _signedAddressOwner
+        ];
+        if (signedCertIds.length == 0) {
+            return new Certificate[](0);
+        }
         Certificate[] memory latestCertificates = new Certificate[](
             signedCertIds.length
         );
@@ -192,16 +197,21 @@ contract Certification {
 
     // Function to trace the history of a certificate
     function getCertificateHistory(
-        string memory _initialId
+        string memory _rootId
     ) public view returns (Certificate[] memory) {
         require(
-            bytes(latestCertificateIdByRootId[_initialId]).length > 0,
+            bytes(latestCertificateIdByRootId[_rootId]).length > 0,
             "Certificate not found"
         );
 
+        // return empty array if no history
+        if(bytes(certificatesById[_rootId].prevId).length == 0) {
+            return new Certificate[](0);
+        }
+
         // Count the number of versions
         uint256 count = 0;
-        string memory currentId = latestCertificateIdByRootId[_initialId];
+        string memory currentId = latestCertificateIdByRootId[_rootId];
         while (bytes(currentId).length > 0) {
             count++;
             currentId = certificatesById[currentId].prevId;
@@ -209,7 +219,7 @@ contract Certification {
 
         // Retrieve all versions
         Certificate[] memory history = new Certificate[](count);
-        currentId = latestCertificateIdByRootId[_initialId];
+        currentId = latestCertificateIdByRootId[_rootId];
         for (uint256 i = count; i > 0; i--) {
             history[i - 1] = certificatesById[currentId];
             currentId = certificatesById[currentId].prevId;
