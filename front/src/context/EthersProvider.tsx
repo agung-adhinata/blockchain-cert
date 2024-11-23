@@ -17,7 +17,7 @@ export function EthersProvider({
   const [startup, setStartup] = useState(true);
 
   const setupBlockchainContext = useCallback(
-    async function setupBlockchainContext(ethereum: ethers.Eip1193Provider) {
+    async (ethereum: ethers.Eip1193Provider) => {
       try {
         const provider = new ethers.BrowserProvider(ethereum);
         const signer = await provider.getSigner();
@@ -26,19 +26,17 @@ export function EthersProvider({
           CertificationJSON.abi,
           signer
         ) as CertificationContract;
-  
+        console.log("wait deployed contract");
         setContext({
           provider,
           contract: newContract,
         });
-
       } catch (e) {
         console.error(e);
       }
     },
     []
   );
-
 
   // Add event listener for account change
   useEffect(() => {

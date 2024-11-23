@@ -15,12 +15,18 @@ export default function CertificatesScreen() {
   const ethersData = useContext(ethersContext);
   const [anyData, setAnyData] = useState<Certificate[]>();
   async function getCertificates() {
-    const signer = await ethersData!.provider.getSigner();
-    const certificates = await ethersData!.contract.getCertificates(
-      await signer.getAddress()
-    );
-    console.log(certificates);
-    setAnyData(certificates);
+    try {
+
+      const signer = await ethersData!.provider.getSigner();
+      const address = await signer.getAddress();
+      const certificates = await ethersData!.contract.getCertificates(
+        address
+      );
+      console.log(certificates);
+      setAnyData(certificates);
+    } catch(e) {
+      console.error(e);
+    }
   }
 
   return (
@@ -39,6 +45,7 @@ export default function CertificatesScreen() {
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
+              <TableHead>Date Time</TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Description</TableHead>
             </TableRow>
@@ -47,6 +54,7 @@ export default function CertificatesScreen() {
             {anyData.map((data, index: number) => (
               <TableRow key={index}>
                 <TableCell>{data.id}</TableCell>
+                <TableCell>{new Date(Number(data.timestamp) * 1000).toISOString()}</TableCell>
                 <TableCell>{data.title}</TableCell>
                 <TableCell>{data.description}</TableCell>
               </TableRow>
