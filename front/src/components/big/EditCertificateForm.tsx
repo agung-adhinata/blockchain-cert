@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 type FormData = {
   title: string;
   description: string;
-  file: FileList;
+  file?: FileList;
 };
 
 type EditCertificateFormProps = {
@@ -14,7 +14,7 @@ type EditCertificateFormProps = {
 
 export function EditCertificateForm(props: EditCertificateFormProps) {
   const etherContext = useContext(ethersContext);
-  const { register, handleSubmit,watch } = useForm<FormData>({
+  const { register, handleSubmit, watch } = useForm<FormData>({
     defaultValues: {
       title: props.certificate.title,
       description: props.certificate.description,
@@ -26,12 +26,12 @@ export function EditCertificateForm(props: EditCertificateFormProps) {
     async (val) => {
       console.log(val);
       const { title, description, file } = val;
-      const filename = file[0].name;
+      const filename = file?.[0].name;
 
       etherContext?.contract.editCertificate(
         props.certificate.rootId,
-        "newid",
-        filename,
+        "0x123" + (Math.random() * 1000).toString(),
+        filename ?? props.certificate.ipfsHash,
         title,
         description
       );
@@ -46,16 +46,16 @@ export function EditCertificateForm(props: EditCertificateFormProps) {
   return (
     <div className="rounded p-4 flex flex-col">
       <h1 className="text-xl font-bold">Edit Certificate Form</h1>
-      <form onSubmit={onSubmit}>
-        <div className="flex flex-col">
+      <form onSubmit={onSubmit} className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
           <label htmlFor="title">Title</label>
           <input id="title" {...register("title")} />
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-1">
           <label htmlFor="description">Description</label>
           <input id="description" {...register("description")} />
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-1">
           <label htmlFor="file">File</label>
           <input
             id="file"
@@ -64,9 +64,9 @@ export function EditCertificateForm(props: EditCertificateFormProps) {
             accept=".jpg,.png,.jpeg,.webp"
           />
         </div>
-        <div className="flex flex-col">
-            <label>File information</label>
-            <p>{formValues.file[0].size}</p>
+        <div className="flex flex-col gap-1">
+          <label>File information</label>
+          <p>{formValues.file?.[0].size}</p>
         </div>
         <button type="submit">Edit</button>
       </form>

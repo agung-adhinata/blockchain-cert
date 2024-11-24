@@ -30,6 +30,7 @@ export function EthersProvider({
         setContext({
           provider,
           contract: newContract,
+
         });
       } catch (e) {
         console.error(e);
@@ -37,6 +38,14 @@ export function EthersProvider({
     },
     []
   );
+  // Add event listener for event change
+  useEffect(() => {
+    if(context){
+      context.contract.on("CertificateCreated", (id, rootId, prevId, signedBy, ipfsHash, timestamp) => {
+        console.log("CertificateCreated", id, rootId, prevId, signedBy, ipfsHash, timestamp);
+      });
+    }
+  }, [context])
 
   // Add event listener for account change
   useEffect(() => {
@@ -52,6 +61,7 @@ export function EthersProvider({
       }
     };
   }, [setupBlockchainContext]);
+
 
   useEffect(() => {
     if (startup) {

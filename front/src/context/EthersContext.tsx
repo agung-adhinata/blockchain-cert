@@ -1,4 +1,5 @@
-import { BrowserProvider, ethers } from "ethers";
+import { ContractTransactionResponse } from "ethers";
+import { BrowserProvider, ethers, TransactionReceipt } from "ethers";
 import { createContext } from "react";
 
 // Certificate struct type
@@ -21,7 +22,7 @@ export interface HardhatContractMethods {
     _ipfsHash: string,
     _title: string,
     _description: string
-  ): Promise<void>;
+  ): Promise<ContractTransactionResponse>;
 
   editCertificate(
     _rootId: string,
@@ -29,7 +30,7 @@ export interface HardhatContractMethods {
     _ipfsHash: string,
     _title: string,
     _description: string
-  ): Promise<void>;
+  ): Promise<ContractTransactionResponse>;
 
   getLatestCertificate(_rootId: string): Promise<Certificate>;
 
@@ -44,12 +45,19 @@ export interface HardhatContractMethods {
   latestCertificateIdByRootId(rootId: string): Promise<string>;
   certificateRootIdsBySignedAddress(address: string): Promise<string[]>;
 }
+export interface TransactionState {
+  receipt?: TransactionReceipt;
+  status: 'none' | 'pending' | 'success' | 'error';
+  error?: Error;
+}
+
 
 export type CertificationContract = ethers.Contract & HardhatContractMethods;
 
 export type BlockchainContext = {
   provider: BrowserProvider;
   contract: CertificationContract;
+  transactions?: Record<string, TransactionState>;
   // connect: (signer: ethers.Signer) => CertificationContract;
 };
 
