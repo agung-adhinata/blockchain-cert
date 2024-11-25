@@ -41,8 +41,8 @@ export function EthersProvider({
   // Add event listener for event change
   useEffect(() => {
     if(context){
-      context.contract.on("CertificateCreated", (id, rootId, prevId, signedBy, ipfsHash, timestamp) => {
-        console.log("CertificateCreated", id, rootId, prevId, signedBy, ipfsHash, timestamp);
+      context.contract.on("CertificateSigned", (id, rootId, prevId, signedBy, ipfsHash, timestamp) => {
+        console.log("CertificateSigned", id, rootId, prevId, signedBy, ipfsHash, timestamp);
       });
     }
   }, [context])
