@@ -7,14 +7,16 @@ import {
   ethersContext,
 } from "./EthersContext";
 import { CONTRACT_ADDRESS } from "@/constant";
+import { BrowserProvider } from "ethers";
 
 export function EthersProvider({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [context, setContext] = useState<BlockchainContext | undefined>();
-  const [startup, setStartup] = useState(true);
+  const [provider, setProvider] = useState<BrowserProvider | undefined>();
+  const [contract, setContract] = useState<CertificationContract | undefined>();
+  const [login, setLogin] = useState(false);
 
   const setupBlockchainContext = useCallback(
     async (ethereum: ethers.Eip1193Provider) => {
@@ -27,10 +29,14 @@ export function EthersProvider({
           signer
         ) as CertificationContract;
         console.log("wait deployed contract");
-        setContext({
-          provider,
-          contract: newContract,
-        });
+
+        setProvider(provider);
+        setContract(newContract);
+
+        if(provider) {
+          const network = await provider.getSigner();
+          console.log("network", network);
+        }
       } catch (e) {
         console.error(e);
       }
@@ -39,8 +45,8 @@ export function EthersProvider({
   );
   // Add event listener for event change
   useEffect(() => {
-    if (context) {
-      context.contract.on(
+    if (contract) {
+      contract.on(
         "CertificateSigned",
         (id, rootId, prevId, signedBy, ipfsHash, timestamp) => {
           console.log(
@@ -56,9 +62,9 @@ export function EthersProvider({
       );
     }
     return () => {
-      if (context) context.contract.removeAllListeners("CertificateSigned");
+      if (contract) contract.removeAllListeners("CertificateSigned");
     };
-  }, [context]);
+  }, [contract]);
 
   // Add event listener for account change
   useEffect(() => {
@@ -67,7 +73,6 @@ export function EthersProvider({
         setupBlockchainContext(window.ethereum!);
       });
     }
-
     return () => {
       if (window.ethereum) {
         window.ethereum.removeAllListeners("accountsChanged");
@@ -75,19 +80,23 @@ export function EthersProvider({
     };
   }, [setupBlockchainContext]);
 
-  useEffect(() => {
-    if (startup) {
-      setStartup(!startup);
-      if (typeof window.ethereum !== "undefined") {
-        try {
-          setupBlockchainContext(window.ethereum);
-        } catch (e) {
-          console.error(e);
-        }
+  useEffect(()=> {
+    if (login) {
+      if (window.ethereum) {
+        setupBlockchainContext(window.ethereum);
       }
     }
-  }, [startup, context, setupBlockchainContext]);
+  }, [login, setupBlockchainContext]);
+
+
+  const value: BlockchainContext = {
+    provider,
+    contract,
+    async connectMetamask() {
+      setLogin(true);
+    },
+  };
   return (
-    <ethersContext.Provider value={context}>{children}</ethersContext.Provider>
+    <ethersContext.Provider value={value}>{children}</ethersContext.Provider>
   );
 }

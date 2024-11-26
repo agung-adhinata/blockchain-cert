@@ -55,10 +55,10 @@ export interface TransactionState {
 export type CertificationContract = ethers.Contract & HardhatContractMethods;
 
 export type BlockchainContext = {
-  provider: BrowserProvider;
-  contract: CertificationContract;
-  transactions?: Record<string, TransactionState>;
-  // connect: (signer: ethers.Signer) => CertificationContract;
+  provider?: BrowserProvider;
+  contract?: CertificationContract;
+  // transactions?: Record<string, TransactionState>;
+  connectMetamask: () => Promise<void>;
 };
 
 export const ethersContext = createContext<BlockchainContext | undefined>(
