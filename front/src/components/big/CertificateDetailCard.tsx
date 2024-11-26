@@ -1,7 +1,11 @@
 import { Certificate, ethersContext } from "@/context/EthersContext";
 import { useCallback, useContext, useEffect, useState } from "react";
 
-export function CertificateDetailCard(certificateId: string) {
+export function CertificateDetailCard({
+  certificateId,
+}: {
+  certificateId: string;
+}) {
   const etherContext = useContext(ethersContext);
   const [loading, setLoading] = useState(true);
   const [certificate, setCertificate] = useState<Certificate | null>(null);
@@ -10,7 +14,8 @@ export function CertificateDetailCard(certificateId: string) {
     if (!etherContext) return;
     try {
       setLoading(true);
-      const result = await etherContext.contract.getCertificate(certificateId);
+      const result = await etherContext?.contract?.getCertificate(certificateId);
+      if(!result) return
       setCertificate(result);
       setLoading(false);
     } catch (e) {
