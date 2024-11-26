@@ -119,7 +119,7 @@ contract Certification {
         // pastikan hanya owner yang sama yang dapat mengubah sertifikat ini
         Certificate memory currentCert = certificatesById[_rootId];
         require(
-            currentCert.signedBy != msg.sender,
+            currentCert.signedBy == msg.sender,
             "Only owner can edit existing certificate"
         );
 
