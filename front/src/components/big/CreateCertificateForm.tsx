@@ -23,8 +23,8 @@ export default function CreateCertificateForm() {
       console.log(val);
       const { title, description, file } = val;
       const filename = file?.[0].name;
-
-      const resp = await etherContext?.contract.signCertificate(
+      
+      const resp = await etherContext?.contract?.signCertificate(
         "0x123" + (Math.random() * 1000).toString(),
         filename ?? "randomname",
         title,

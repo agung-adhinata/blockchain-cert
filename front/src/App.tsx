@@ -5,6 +5,7 @@ import CertificatesScreen from "./screens/CertificatesScreen";
 import CreateCertificateScreen from "./screens/CreateCertificateScreen";
 import CertificateDetailScreen from "./screens/CertificateDetailScreen";
 import { RootLayout } from "./components/layout/RootLayout";
+import EditCertificateScreen from "./screens/EditCertificateScreen";
 
 function App() {
   return (
@@ -13,9 +14,14 @@ function App() {
         <Route index element={<HomeScreen />} />
         <Route path="/certificates" element={<CertificatesScreen />} />
         <Route path="/certificates/:id" element={<CertificateDetailScreen />} />
+
         <Route
           path="/certificates/create"
           element={<CreateCertificateScreen />}
+        />
+        <Route
+          path="/certificates/edit/:id"
+          element={<EditCertificateScreen />}
         />
         <Route
           path="*"

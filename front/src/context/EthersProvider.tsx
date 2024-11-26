@@ -8,12 +8,14 @@ import {
 } from "./EthersContext";
 import { CONTRACT_ADDRESS } from "@/constant";
 import { BrowserProvider } from "ethers";
+import { useToast } from "@/hooks/use-toast";
 
 export function EthersProvider({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const {toast} = useToast()
   const [provider, setProvider] = useState<BrowserProvider | undefined>();
   const [contract, setContract] = useState<CertificationContract | undefined>();
   const [login, setLogin] = useState(false);
@@ -58,6 +60,12 @@ export function EthersProvider({
             ipfsHash,
             timestamp
           );
+          toast({
+            title: "Certificate Signed",
+            description: `Certificate with id ${JSON.stringify(prevId)} has been signed`,
+            duration: 5000,
+            variant: "default"
+          });
         }
       );
     }

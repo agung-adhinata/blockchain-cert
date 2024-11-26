@@ -1,6 +1,11 @@
 import { Certificate, ethersContext } from "@/context/EthersContext";
+import { useToast } from "@/hooks/use-toast";
 import { useContext } from "react";
 import { useForm } from "react-hook-form";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 type FormData = {
   title: string;
@@ -14,61 +19,70 @@ type EditCertificateFormProps = {
 
 export function EditCertificateForm(props: EditCertificateFormProps) {
   const etherContext = useContext(ethersContext);
-  const { register, handleSubmit, watch } = useForm<FormData>({
+  const { toast } = useToast();
+  const { register, handleSubmit } = useForm<FormData>({
     defaultValues: {
       title: props.certificate.title,
       description: props.certificate.description,
     },
   });
-  const formValues = watch();
 
   const onSubmit = handleSubmit(
     async (val) => {
       console.log(val);
-      const { title, description, file } = val;
-      const filename = file?.[0].name;
-
-      etherContext?.contract.editCertificate(
-        props.certificate.rootId,
-        "0x123" + (Math.random() * 1000).toString(),
-        filename ?? props.certificate.ipfsHash,
-        title,
-        description
-      );
-      // Call editCertificate function from ethersContext
-      console.log("Certificate edited");
+      try {
+        const { title, description, file } = val;
+        const filename = file?.[0].name;
+        if (!etherContext) return;
+        await etherContext?.contract?.editCertificate(
+          props.certificate.rootId,
+          "0x123" + (Math.random() * 1000).toString(),
+          filename ?? props.certificate.ipfsHash,
+          title,
+          description
+        );
+        console.log("Certificate edited");
+      } catch (e) {
+        console.error(`Failed to edit certificate:\n${e}`);
+      }
     },
     (val) => {
       console.log(val);
+      toast({
+        title: "Failed to edit",
+        description: "Error editing certificate, check console log",
+        variant: "destructive",
+      });
     }
   );
 
   return (
-    <div className="rounded p-4 flex flex-col">
-      <h1 className="text-xl font-bold">Edit Certificate Form</h1>
+    <div className="rounded p-4 flex flex-col gap-8">
+      <div>
+        <h1 className="text-xl font-bold">Edit Certificate Form</h1>
+        <p className="text-muted-foreground text-xs">
+          signer: {props.certificate.signedBy}
+        </p>
+      </div>
       <form onSubmit={onSubmit} className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
-          <label htmlFor="title">Title</label>
-          <input id="title" {...register("title")} />
+          <Label htmlFor="title">Title</Label>
+          <Input id="title" {...register("title")} />
         </div>
         <div className="flex flex-col gap-1">
-          <label htmlFor="description">Description</label>
-          <input id="description" {...register("description")} />
+          <Label htmlFor="description">Description</Label>
+          <Textarea id="description" {...register("description")} />
         </div>
         <div className="flex flex-col gap-1">
-          <label htmlFor="file">File</label>
-          <input
+          <Label htmlFor="file">File</Label>
+          <Input
             id="file"
             type="file"
             {...register("file")}
             accept=".jpg,.png,.jpeg,.webp"
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <label>File information</label>
-          <p>{formValues.file?.[0].size}</p>
-        </div>
-        <button type="submit">Edit</button>
+        <Button type="submit">Edit</Button>
       </form>
     </div>
   );

@@ -8,67 +8,98 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Certificate, ethersContext } from "@/context/EthersContext";
-import { useContext, useState } from "react";
+import { Plus, RefreshCcw } from "lucide-react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
 export default function CertificatesScreen() {
   const navigate = useNavigate();
-  const ethersData = useContext(ethersContext);
+  const etherContext = useContext(ethersContext);
+  const [loading, setLoading] = useState(true);
   const [anyData, setAnyData] = useState<Certificate[]>();
-  async function getCertificates() {
+
+  const getCertificates = useCallback(async () => {
     try {
-      if(ethersData?.provider === undefined) {
-        throw new Error("Provider is not set");
-      }
-      const signer = await ethersData.provider.getSigner();
+      if (!etherContext) return;
+      setLoading(true);
+      const signer = await etherContext?.provider?.getSigner();
       const address = await signer?.getAddress();
-      const certificates = await ethersData?.contract?.getCertificates(
+      const certificates = await etherContext?.contract?.getCertificates(
         address!
       );
-      console.log(certificates);  
+      console.log(certificates);
       setAnyData(certificates);
-    } catch(e) {
+    } catch (e) {
       console.error(e);
     }
-  }
+    setLoading(false);
+  }, [etherContext]);
+
+  useEffect(() => {
+    getCertificates();
+  }, [etherContext, getCertificates]);
 
   return (
-    <div className="h-full">
-      <h1>Certificates Screen</h1>
+    <div className="h-full max-w-3xl w-full flex flex-col py-4">
+      {/* <h1>Certificates Screen</h1> */}
       <div className="flex gap-2">
-        <Button onClick={() => getCertificates()}>Get Certificates</Button>
+        <Button
+          variant={"outline"}
+          size={"icon"}
+          onClick={() => getCertificates()}
+        >
+          <RefreshCcw />
+        </Button>
         <Button asChild>
-          <Link to={"/certificates/create"}>Create Certificate</Link>
+          <Link to={"/certificates/create"}>
+            <Plus />
+            Create Certificate
+          </Link>
         </Button>
       </div>
-      {!anyData ? (
-        <p>No certificates</p>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Date Time</TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead>Description</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {anyData.map((data, index: number) => (
-              <TableRow key={index} onClick={
-                () => {
-                  navigate(`/certificates/${data.id}`);
-                }
-              }>
-                <TableCell>{data.id}</TableCell>
-                <TableCell>{new Date(Number(data.timestamp) * 1000).toISOString()}</TableCell>
-                <TableCell>{data.title}</TableCell>
-                <TableCell>{data.description}</TableCell>
+      <section className="flex-grow flex flex-col justify-center items-center">
+        {loading ? (
+          <h1 className="flex flex-col items-center">
+            <span className="font-bold">🐇 Loading... </span>
+            <span className="text-muted-foreground text-center">
+              make sure you have good network and connected to metamask 🛜
+            </span>
+          </h1>
+        ) : (
+          <></>
+        )}
+        {!anyData ? (
+          <p className="">No certificates</p>
+        ) : (
+          <Table >
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Date Time</TableHead>
+                <TableHead>Title</TableHead>
+                <TableHead>Description</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
+            </TableHeader>
+            <TableBody>
+              {anyData.map((data, index: number) => (
+                <TableRow
+                  key={index}
+                  onClick={() => {
+                    navigate(`/certificates/${data.id}`);
+                  }}
+                >
+                  <TableCell>{data.id}</TableCell>
+                  <TableCell>
+                    {new Date(Number(data.timestamp) * 1000).toISOString()}
+                  </TableCell>
+                  <TableCell>{data.title}</TableCell>
+                  <TableCell>{data.description}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </section>
     </div>
   );
 }
