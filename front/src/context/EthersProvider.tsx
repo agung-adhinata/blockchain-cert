@@ -30,7 +30,6 @@ export function EthersProvider({
         setContext({
           provider,
           contract: newContract,
-
         });
       } catch (e) {
         console.error(e);
@@ -40,12 +39,26 @@ export function EthersProvider({
   );
   // Add event listener for event change
   useEffect(() => {
-    if(context){
-      context.contract.on("CertificateSigned", (id, rootId, prevId, signedBy, ipfsHash, timestamp) => {
-        console.log("CertificateSigned", id, rootId, prevId, signedBy, ipfsHash, timestamp);
-      });
+    if (context) {
+      context.contract.on(
+        "CertificateSigned",
+        (id, rootId, prevId, signedBy, ipfsHash, timestamp) => {
+          console.log(
+            "CertificateSigned",
+            id,
+            rootId,
+            prevId,
+            signedBy,
+            ipfsHash,
+            timestamp
+          );
+        }
+      );
     }
-  }, [context])
+    return () => {
+      if (context) context.contract.removeAllListeners("CertificateSigned");
+    };
+  }, [context]);
 
   // Add event listener for account change
   useEffect(() => {
@@ -61,7 +74,6 @@ export function EthersProvider({
       }
     };
   }, [setupBlockchainContext]);
-
 
   useEffect(() => {
     if (startup) {
