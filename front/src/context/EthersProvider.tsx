@@ -15,7 +15,7 @@ export function EthersProvider({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const {toast} = useToast()
+  const { toast } = useToast();
   const [provider, setProvider] = useState<BrowserProvider | undefined>();
   const [contract, setContract] = useState<CertificationContract | undefined>();
   const [login, setLogin] = useState(false);
@@ -35,7 +35,7 @@ export function EthersProvider({
         setProvider(provider);
         setContract(newContract);
 
-        if(provider) {
+        if (provider) {
           const network = await provider.getSigner();
           console.log("network", network);
         }
@@ -62,17 +62,42 @@ export function EthersProvider({
           );
           toast({
             title: "Certificate Signed",
-            description: `Certificate with id ${JSON.stringify(prevId)} has been signed`,
+            description: `Certificate with id ${JSON.stringify(
+              prevId
+            )} has been signed`,
             duration: 5000,
-            variant: "default"
+            variant: "default",
+          });
+        }
+      );
+      contract.on(
+        "CertificateVersionUpdated",
+        (rootId, oldVersionId, newVersionId) => {
+          console.log(
+            "CertificateVersionUpdated ",
+            rootId," prevId:",
+            oldVersionId,
+            " newId:",
+            newVersionId
+          );
+          toast({
+            title: "Certificate Version Updated",
+            description: `Certificate with id ${JSON.stringify(
+              oldVersionId
+            )} has been updated to version ${JSON.stringify(newVersionId)}`,
+            duration: 5000,
+            variant: "default",
           });
         }
       );
     }
     return () => {
-      if (contract) contract.removeAllListeners("CertificateSigned");
+      if (contract) {
+        contract.removeAllListeners("CertificateSigned");
+        contract.removeAllListeners("CertificateVersionUpdated");
+      }
     };
-  }, [contract]);
+  }, [contract, toast]);
 
   // Add event listener for account change
   useEffect(() => {
@@ -88,14 +113,13 @@ export function EthersProvider({
     };
   }, [setupBlockchainContext]);
 
-  useEffect(()=> {
+  useEffect(() => {
     if (login) {
       if (window.ethereum) {
         setupBlockchainContext(window.ethereum);
       }
     }
   }, [login, setupBlockchainContext]);
-
 
   const value: BlockchainContext = {
     provider,

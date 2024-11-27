@@ -1,6 +1,7 @@
 import { ContractTransactionResponse } from "ethers";
 import { BrowserProvider, ethers, TransactionReceipt } from "ethers";
 import { createContext } from "react";
+import {Certification} from "@blockchain-cert/backend/typechain-types";
 
 // Certificate struct type
 export interface Certificate {
@@ -38,7 +39,7 @@ export interface HardhatContractMethods {
 
   getCertificates(_signedAddressOwner: string): Promise<Certificate[]>;
 
-  getCertificateHistory(_initialId: string): Promise<Certificate[]>;
+  getCertificateHistory(_rootId: string): Promise<Certificate[]>;
 
   // View mappings
   certificatesById(id: string): Promise<Certificate>;
@@ -52,7 +53,7 @@ export interface TransactionState {
 }
 
 
-export type CertificationContract = ethers.Contract & HardhatContractMethods;
+export type CertificationContract = ethers.Contract & Certification;
 
 export type BlockchainContext = {
   provider?: BrowserProvider;
