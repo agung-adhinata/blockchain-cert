@@ -4,30 +4,57 @@ import { HorizontalDivider } from "@/components/ui/divider";
 import { Button } from "../ui/button";
 import { Link } from "react-router";
 import { dateFromTimestamp } from "@/lib/utils";
+import { ipfs } from "@/lib/ipfs";
+import { useToast } from "@/hooks/use-toast";
 
 export function CertificateDetailCard({
   certificateId,
 }: {
   certificateId: string;
 }) {
+  const { toast } = useToast();
   const etherContext = useContext(ethersContext);
   const [loading, setLoading] = useState(true);
-  const [certificate, setCertificate] = useState<Certificate | null>(null);
+  const [image, setImage] = useState<string | undefined>();
+  const [certificate, setCertificate] = useState<Certificate | undefined>();
+
+  const fetchImage = useCallback(async () => {
+    if (!certificate) return;
+    try {
+      const imageUrl = await ipfs.gateways.convert(certificate.ipfsHash);
+      setImage(imageUrl);
+    } catch (e) {
+      console.error(`Failed to fetch image:\n${e}`);
+      toast({
+        title: "Failed to fetch image",
+        description: e?.toString(),
+        variant: "destructive",
+        duration: 10000,
+      });
+    }
+  }, [certificate, toast]);
 
   const fetchCertificate = useCallback(async () => {
     if (!etherContext) return;
     try {
       setLoading(true);
-      const result = await etherContext?.contract?.getCertificate(
-        certificateId
-      );
+      const result =
+        await etherContext?.contract?.getCertificate(certificateId);
       if (!result) return;
       setCertificate(result);
-      setLoading(false);
+      fetchImage();
     } catch (e) {
       console.error(`Failed to fetch certificate:\n${e}`);
+
+      toast({
+        title: "Failed to fetch certificate",
+        description: e?.toString(),
+        variant: "destructive",
+        duration: 10000,
+      });
     }
-  }, [certificateId, etherContext]);
+    setLoading(false);
+  }, [certificateId, etherContext, fetchImage, toast]);
 
   useEffect(() => {
     if (etherContext) {
@@ -36,27 +63,34 @@ export function CertificateDetailCard({
   }, [etherContext, fetchCertificate]);
 
   return (
-    <div className="rounded p-4 bg-muted flex flex-col gap-4 max-w-xl">
+    <div className="flex max-w-xl flex-col gap-4 rounded bg-muted p-4">
       {loading ? (
         <h1 className="flex flex-col items-center">
           <span className="font-bold">🐇 Loading... </span>
-          <span className="text-muted-foreground text-center">
+          <span className="text-center text-muted-foreground">
             make sure you have good network and connected to metamask 🛜
           </span>
         </h1>
       ) : certificate ? (
         <div className="flex flex-col gap-2">
-          <section className="grid text-xs grid-cols-4 grid-flow-row-dense shrink max-w-full ">
-            <p className="font-mono shrink col-span-1">SIGNER: </p>
-            <p className="col-span-3 text-muted-foreground font-mono">
+          <section className="w-full overflow-hidden">
+            <img
+              src={image}
+              alt={certificate.title}
+              className="h-96 w-full object-cover"
+            />
+          </section>
+          <section className="grid max-w-full shrink grid-flow-row-dense grid-cols-4 text-xs">
+            <p className="col-span-1 shrink font-mono">SIGNER: </p>
+            <p className="col-span-3 font-mono text-muted-foreground">
               {certificate.signedBy}
             </p>
-            <p className="font-mono shrink col-span-1">ID: </p>
-            <p className="col-span-3 text-muted-foreground font-mono">
+            <p className="col-span-1 shrink font-mono">ID: </p>
+            <p className="col-span-3 font-mono text-muted-foreground">
               {certificate.id}
             </p>
-            <p className="font-mono shrink col-span-1">DATE TIME: </p>
-            <p className="col-span-3 text-muted-foreground font-mono">
+            <p className="col-span-1 shrink font-mono">DATE TIME: </p>
+            <p className="col-span-3 font-mono text-muted-foreground">
               {dateFromTimestamp(certificate.timestamp).toLocaleString()}
             </p>
           </section>

@@ -1,11 +1,12 @@
 import { Certificate, ethersContext } from "@/context/EthersContext";
 import { useToast } from "@/hooks/use-toast";
-import { useContext } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { ipfs } from "@/lib/ipfs";
 
 type FormData = {
   title: string;
@@ -20,12 +21,29 @@ type EditCertificateFormProps = {
 export function EditCertificateForm(props: EditCertificateFormProps) {
   const etherContext = useContext(ethersContext);
   const { toast } = useToast();
+
   const { register, handleSubmit } = useForm<FormData>({
     defaultValues: {
       title: props.certificate.title,
       description: props.certificate.description,
     },
   });
+  const [image, setImage] = useState<string | undefined>();
+
+  const fetchImage = useCallback(async () => {
+    try {
+      const imageUrl = await ipfs.gateways.convert(props.certificate.ipfsHash);
+      setImage(imageUrl);
+    } catch (e) {
+      console.error(`Failed to fetch image:\n${e}`);
+      toast({
+        title: "Failed to fetch image",
+        description: e?.toString(),
+        variant: "destructive",
+        duration: 10000,
+      });
+    }
+  }, [props.certificate.ipfsHash, toast]);
 
   const onSubmit = handleSubmit(
     async (val) => {
@@ -44,6 +62,12 @@ export function EditCertificateForm(props: EditCertificateFormProps) {
         console.log("Certificate edited");
       } catch (e) {
         console.error(`Failed to edit certificate:\n${e}`);
+        toast({
+          title: "Failed to edit certificate",
+          description: e?.toString(),
+          variant: "destructive",
+          duration: 10000,
+        });
       }
     },
     (val) => {
@@ -56,15 +80,26 @@ export function EditCertificateForm(props: EditCertificateFormProps) {
     },
   );
 
+  useEffect(() => {
+    fetchImage();
+  }, [fetchImage]);
+
   return (
-    <div className="flex flex-col gap-8 rounded p-4">
+    <div className="flex w-full max-w-md flex-col gap-8 rounded p-4">
+      <section className="w-full overflow-hidden p-4">
+        <img
+          src={image}
+          alt={props.certificate.title}
+          className="h-64 w-full rounded object-cover"
+        />
+      </section>
       <div>
         <h1 className="text-xl font-bold">Edit Certificate Form</h1>
         <p className="text-xs text-muted-foreground">
           signer: {props.certificate.signedBy}
         </p>
       </div>
-      <form onSubmit={onSubmit} className="flex flex-col gap-3">
+      <form onSubmit={onSubmit} className="flex flex-col gap-3 w-full">
         <div className="flex flex-col gap-1">
           <Label htmlFor="title">Title</Label>
           <Input id="title" {...register("title")} />
