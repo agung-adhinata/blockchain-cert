@@ -35,7 +35,7 @@ export function CertificateDetailCard({
   }, [etherContext, fetchCertificate]);
 
   return (
-    <div className="rounded p-4 flex flex-col gap-4 max-w-md">
+    <div className="rounded p-4 bg-muted flex flex-col gap-4 max-w-lg">
       {loading ? (
         <h1 className="flex flex-col items-center">
           <span className="font-bold">🐇 Loading... </span>
