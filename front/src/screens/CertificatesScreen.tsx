@@ -69,7 +69,7 @@ export default function CertificatesScreen() {
         ) : (
           <section className="flex flex-grow w-full">
             {!anyData ? (
-              <p className="">No certificates</p>
+              <p className="flex flex-grow items-center justify-center">No certificates</p>
             ) : (
               <Table className="min-w-full">
                 <TableHeader>
