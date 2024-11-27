@@ -34,6 +34,11 @@ contract Certification {
         string ipfsHash,
         uint256 timestamp
     );
+    event CertificateVersionUpdated(
+        string rootId,
+        string oldVersionId,
+        string newVersionId
+    );
 
     // buat sertifikat baru. fungsi ini tidak akan bekerja bagi sertifikat yang sudah dibuat sebelumnya
     /// @notice membaut sertifikat menggunakan validasi dan logging
@@ -117,7 +122,7 @@ contract Certification {
         require(bytes(currentId).length > 0, "Original certificate not found");
 
         // pastikan hanya owner yang sama yang dapat mengubah sertifikat ini
-        Certificate memory currentCert = certificatesById[_rootId];
+        Certificate memory currentCert = certificatesById[currentId];
         require(
             currentCert.signedBy == msg.sender,
             "Only owner can edit existing certificate"
@@ -146,14 +151,7 @@ contract Certification {
         // Update latest certificate
         latestCertificateIdByRootId[_rootId] = _newId;
         // Emit an event for logging
-        emit CertificateSigned(
-            _newId,
-            _rootId,
-            currentId,
-            msg.sender,
-            _ipfsHash,
-            block.timestamp
-        );
+        emit CertificateVersionUpdated(_rootId, currentId, _newId);
     }
 
     // Function to retrieve the latest version of a certificate
@@ -204,24 +202,22 @@ contract Certification {
             "Certificate not found"
         );
 
-        // return empty array if no history
-        if(bytes(certificatesById[_rootId].prevId).length == 0) {
-            return new Certificate[](0);
-        }
-
-        // Count the number of versions
-        uint256 count = 0;
+        uint256 count = 1; // Start at 1 to include the latest certificate
         string memory currentId = latestCertificateIdByRootId[_rootId];
-        while (bytes(currentId).length > 0) {
+        string memory prevId = certificatesById[currentId].prevId;
+
+        while (bytes(prevId).length > 0) {
             count++;
-            currentId = certificatesById[currentId].prevId;
+            currentId = prevId;
+            prevId = certificatesById[currentId].prevId;
         }
 
         // Retrieve all versions
         Certificate[] memory history = new Certificate[](count);
         currentId = latestCertificateIdByRootId[_rootId];
-        for (uint256 i = count; i > 0; i--) {
-            history[i - 1] = certificatesById[currentId];
+
+        for (uint256 i = 0; i < count; i++) {
+            history[i] = certificatesById[currentId];
             currentId = certificatesById[currentId].prevId;
         }
 
