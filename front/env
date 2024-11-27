@@ -1,0 +1,3 @@
+VITE_PINATA_JWT="JWT here"
+VITE_PINATA_GATEWAY="gateway here"
+VITE_PINATA_GATEWAY_KEY="key here"
