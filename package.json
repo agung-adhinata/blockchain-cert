@@ -19,6 +19,8 @@
     "front"
   ],
   "devDependencies": {
+    "prettier": "^3.4.1",
+    "prettier-plugin-tailwindcss": "^0.6.9",
     "ts-node": "^10.9.2"
   }
 }

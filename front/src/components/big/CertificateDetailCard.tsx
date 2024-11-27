@@ -3,6 +3,7 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { HorizontalDivider } from "@/components/ui/divider";
 import { Button } from "../ui/button";
 import { Link } from "react-router";
+import { dateFromTimestamp } from "@/lib/utils";
 
 export function CertificateDetailCard({
   certificateId,
@@ -35,35 +36,29 @@ export function CertificateDetailCard({
   }, [etherContext, fetchCertificate]);
 
   return (
-    <div className="rounded p-4 bg-muted flex flex-col gap-4 max-w-lg">
+    <div className="rounded p-4 bg-muted flex flex-col gap-4 max-w-xl">
       {loading ? (
         <h1 className="flex flex-col items-center">
           <span className="font-bold">🐇 Loading... </span>
-          <span className="text-muted-foreground text-center">make sure you have good network and connected to metamask 🛜</span>
+          <span className="text-muted-foreground text-center">
+            make sure you have good network and connected to metamask 🛜
+          </span>
         </h1>
       ) : certificate ? (
         <div className="flex flex-col gap-2">
-          <section>
-            <div className="flex gap-2">
-              <p className="font-bold font-mono">SIGNER: </p>
-              <p className="text-muted-foreground font-mono">
-                {certificate.signedBy}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <p className="font-bold font-mono">ID: </p>
-              <p className="text-muted-foreground font-mono">
-                {certificate.id}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <p className="font-bold font-mono">DATE TIME: </p>
-              <p className="text-muted-foreground font-mono">
-                {new Date(
-                  Number(certificate.timestamp) * 1000
-                ).toLocaleString()}
-              </p>
-            </div>
+          <section className="grid text-xs grid-cols-4 grid-flow-row-dense shrink max-w-full ">
+            <p className="font-mono shrink col-span-1">SIGNER: </p>
+            <p className="col-span-3 text-muted-foreground font-mono">
+              {certificate.signedBy}
+            </p>
+            <p className="font-mono shrink col-span-1">ID: </p>
+            <p className="col-span-3 text-muted-foreground font-mono">
+              {certificate.id}
+            </p>
+            <p className="font-mono shrink col-span-1">DATE TIME: </p>
+            <p className="col-span-3 text-muted-foreground font-mono">
+              {dateFromTimestamp(certificate.timestamp).toLocaleString()}
+            </p>
           </section>
           <h1 className="text-xl font-bold">{certificate.title}</h1>
           <div>
@@ -71,11 +66,11 @@ export function CertificateDetailCard({
             <p>{certificate.description}</p>
           </div>
           <p>{certificate.ipfsHash}</p>
-          <HorizontalDivider/>
+          <HorizontalDivider />
           <div className="flex gap-2">
             <Button asChild>
-              <Link to={"/certificates/edit/" + certificate.id} >
-              Edit Certificate
+              <Link to={"/certificates/edit/" + certificate.id}>
+                Edit Certificate
               </Link>
             </Button>
           </div>

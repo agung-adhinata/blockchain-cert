@@ -39,7 +39,7 @@ export function EditCertificateForm(props: EditCertificateFormProps) {
           "0x123" + (Math.random() * 1000).toString(),
           filename ?? props.certificate.ipfsHash,
           title,
-          description
+          description,
         );
         console.log("Certificate edited");
       } catch (e) {
@@ -53,14 +53,14 @@ export function EditCertificateForm(props: EditCertificateFormProps) {
         description: "Error editing certificate, check console log",
         variant: "destructive",
       });
-    }
+    },
   );
 
   return (
-    <div className="rounded p-4 flex flex-col gap-8">
+    <div className="flex flex-col gap-8 rounded p-4">
       <div>
         <h1 className="text-xl font-bold">Edit Certificate Form</h1>
-        <p className="text-muted-foreground text-xs">
+        <p className="text-xs text-muted-foreground">
           signer: {props.certificate.signedBy}
         </p>
       </div>

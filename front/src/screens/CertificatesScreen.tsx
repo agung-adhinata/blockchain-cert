@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Certificate, ethersContext } from "@/context/EthersContext";
+import { dateFromTimestamp } from "@/lib/utils";
 import { Plus, RefreshCcw } from "lucide-react";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
@@ -66,38 +67,39 @@ export default function CertificatesScreen() {
             </span>
           </h1>
         ) : (
-          <></>
-        )}
-        {!anyData ? (
-          <p className="">No certificates</p>
-        ) : (
-          <Table >
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Date Time</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Description</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {anyData.map((data, index: number) => (
-                <TableRow
-                  key={index}
-                  onClick={() => {
-                    navigate(`/certificates/${data.id}`);
-                  }}
-                >
-                  <TableCell>{data.id}</TableCell>
-                  <TableCell>
-                    {new Date(Number(data.timestamp) * 1000).toISOString()}
-                  </TableCell>
-                  <TableCell>{data.title}</TableCell>
-                  <TableCell>{data.description}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <section className="flex flex-grow w-full">
+            {!anyData ? (
+              <p className="">No certificates</p>
+            ) : (
+              <Table className="min-w-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Date Time</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Description</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {anyData.map((data, index: number) => (
+                    <TableRow
+                      key={index}
+                      onClick={() => {
+                        navigate(`/certificates/${data.id}`);
+                      }}
+                    >
+                      <TableCell>{data.id}</TableCell>
+                      <TableCell>
+                        {dateFromTimestamp(data.timestamp).toISOString()}
+                      </TableCell>
+                      <TableCell>{data.title}</TableCell>
+                      <TableCell>{data.description}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </section>
         )}
       </section>
     </div>
