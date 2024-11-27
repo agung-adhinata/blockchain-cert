@@ -23,7 +23,8 @@
     "noUncheckedSideEffectImports": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@blockchain-cert/backend/*": ["../backend/*"]
     }
   },
   "include": ["src","app.d.ts"]
