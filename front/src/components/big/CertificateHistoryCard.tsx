@@ -1,6 +1,7 @@
 import { Certificate, ethersContext } from "@/context/EthersContext";
 import { dateFromTimestamp } from "@/lib/utils";
 import { useCallback, useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 
 export function CertificateHistoryCard({
   rootId,
@@ -9,6 +10,7 @@ export function CertificateHistoryCard({
   rootId: string;
   currentId: string;
 }) {
+  const navigate = useNavigate()
   const etherContext = useContext(ethersContext);
   const [certificates, setCertificates] = useState<Certificate[] | undefined>();
 
@@ -35,17 +37,21 @@ export function CertificateHistoryCard({
   }, [rootId, fetchHistories, etherContext]);
 
   return (
-    <div className="flex flex-col gap-4 h-full border-l-[1px]">
-      <p className="font-bold text-lg p-4">Histories</p>
+    <div className="flex h-full flex-col gap-4 border-l-[1px]">
+      <p className="p-4 text-lg font-bold">Histories</p>
       {loading ? <p>Loading...</p> : <></>}
       {certificates ? (
         certificates.map((cert, i) => {
           const highlight = cert.id === currentID ? "border-red-400" : "";
           return (
             <div
+              onClick={() => {
+                console.log(cert);
+                navigate("/certificates/" + cert.id);
+              }}
               key={i}
               className={
-                "flex flex-col gap hover:bg-muted w-full py-4 px-8 hover:cursor-pointer border-l-4 " +
+                "gap flex w-full flex-col border-l-4 px-8 py-4 hover:cursor-pointer hover:bg-muted " +
                 highlight
               }
             >
