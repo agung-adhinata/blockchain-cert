@@ -1,12 +1,12 @@
 import { Certificate, ethersContext } from "@/context/EthersContext";
 import { useToast } from "@/hooks/use-toast";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ipfs } from "@/lib/ipfs";
+import { getPinataImage, ipfs } from "@/lib/ipfs";
 
 type FormData = {
   title: string;
@@ -29,33 +29,35 @@ export function EditCertificateForm(props: EditCertificateFormProps) {
     },
   });
   const [image, setImage] = useState<string | undefined>();
-
-  const fetchImage = useCallback(async () => {
-    try {
-      const imageUrl = await ipfs.gateways.convert(props.certificate.ipfsHash);
-      setImage(imageUrl);
-    } catch (e) {
-      console.error(`Failed to fetch image:\n${e}`);
-      toast({
-        title: "Failed to fetch image",
-        description: e?.toString(),
-        variant: "destructive",
-        duration: 10000,
-      });
-    }
-  }, [props.certificate.ipfsHash, toast]);
+  const [loading, setLoading] = useState(false);
 
   const onSubmit = handleSubmit(
     async (val) => {
       console.log(val);
+      setLoading(true);
       try {
         const { title, description, file } = val;
-        const filename = file?.[0].name;
+        const filename = file?.[0];
+
         if (!etherContext) return;
+        if (filename) {
+          const ipfsHash = await ipfs.upload.file(filename);
+
+          await etherContext?.contract?.editCertificate(
+            props.certificate.rootId,
+            "0x123" + (Math.random() * 1000).toString(),
+            ipfsHash.IpfsHash,
+            title,
+            description,
+          );
+          console.log("Certificate edited");
+          return;
+        }
+
         await etherContext?.contract?.editCertificate(
           props.certificate.rootId,
           "0x123" + (Math.random() * 1000).toString(),
-          filename ?? props.certificate.ipfsHash,
+          props.certificate.ipfsHash,
           title,
           description,
         );
@@ -69,6 +71,7 @@ export function EditCertificateForm(props: EditCertificateFormProps) {
           duration: 10000,
         });
       }
+      setLoading(false);
     },
     (val) => {
       console.log(val);
@@ -79,10 +82,9 @@ export function EditCertificateForm(props: EditCertificateFormProps) {
       });
     },
   );
-
   useEffect(() => {
-    fetchImage();
-  }, [fetchImage]);
+    getPinataImage(props.certificate.ipfsHash).then(setImage);
+  }, [props.certificate.ipfsHash]);
 
   return (
     <div className="flex w-full max-w-md flex-col gap-8 rounded p-4">
@@ -99,7 +101,7 @@ export function EditCertificateForm(props: EditCertificateFormProps) {
           signer: {props.certificate.signedBy}
         </p>
       </div>
-      <form onSubmit={onSubmit} className="flex flex-col gap-3 w-full">
+      <form onSubmit={onSubmit} className="flex w-full flex-col gap-3">
         <div className="flex flex-col gap-1">
           <Label htmlFor="title">Title</Label>
           <Input id="title" {...register("title")} />
@@ -117,7 +119,9 @@ export function EditCertificateForm(props: EditCertificateFormProps) {
             accept=".jpg,.png,.jpeg,.webp"
           />
         </div>
-        <Button type="submit">Edit</Button>
+        <Button disabled={loading} type="submit">
+          Edit
+        </Button>
       </form>
     </div>
   );

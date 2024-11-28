@@ -4,7 +4,7 @@ import { HorizontalDivider } from "@/components/ui/divider";
 import { Button } from "../ui/button";
 import { Link } from "react-router";
 import { dateFromTimestamp } from "@/lib/utils";
-import { ipfs } from "@/lib/ipfs";
+import { getPinataImage } from "@/lib/ipfs";
 import { useToast } from "@/hooks/use-toast";
 
 export function CertificateDetailCard({
@@ -18,21 +18,22 @@ export function CertificateDetailCard({
   const [image, setImage] = useState<string | undefined>();
   const [certificate, setCertificate] = useState<Certificate | undefined>();
 
-  const fetchImage = useCallback(async () => {
-    if (!certificate) return;
-    try {
-      const imageUrl = await ipfs.gateways.convert(certificate.ipfsHash);
-      setImage(imageUrl);
-    } catch (e) {
-      console.error(`Failed to fetch image:\n${e}`);
-      toast({
-        title: "Failed to fetch image",
-        description: e?.toString(),
-        variant: "destructive",
-        duration: 10000,
-      });
-    }
-  }, [certificate, toast]);
+  // const fetchImage = useCallback(async () => {
+  //   if (!certificate) return;
+  //   try {
+  //     const imageUrl = await getPinataImage(certificate.ipfsHash);
+  //     console.log(imageUrl);
+  //     setImage(imageUrl);
+  //   } catch (e) {
+  //     console.error(`Failed to fetch image:\n${e}`);
+  //     toast({
+  //       title: "Failed to fetch image",
+  //       description: e?.toString(),
+  //       variant: "destructive",
+  //       duration: 10000,
+  //     });
+  //   }
+  // }, [certificate, toast]);
 
   const fetchCertificate = useCallback(async () => {
     if (!etherContext) return;
@@ -42,7 +43,7 @@ export function CertificateDetailCard({
         await etherContext?.contract?.getCertificate(certificateId);
       if (!result) return;
       setCertificate(result);
-      fetchImage();
+      getPinataImage(result.ipfsHash).then(setImage);
     } catch (e) {
       console.error(`Failed to fetch certificate:\n${e}`);
 
@@ -54,11 +55,12 @@ export function CertificateDetailCard({
       });
     }
     setLoading(false);
-  }, [certificateId, etherContext, fetchImage, toast]);
+  }, [certificateId, etherContext, toast]);
 
   useEffect(() => {
     if (etherContext) {
       fetchCertificate();
+
     }
   }, [etherContext, fetchCertificate]);
 
