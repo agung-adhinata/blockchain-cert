@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ethersContext } from "@/context/EthersContext";
-import { useContext, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useContext, useEffect, useState } from "react";
+import { set, useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "../ui/checkbox";
 import { ipfs } from "@/lib/ipfs";
@@ -16,11 +16,19 @@ type FormData = {
 
 export default function CreateCertificateForm() {
   const etherContext = useContext(ethersContext);
-  const [submitEnable, setSubmitEnable] = useState(false);
+  const [canSubmit, setCanSubmit] = useState(false);
   const { register, handleSubmit } = useForm<FormData>();
+  const [loading, setLoading] = useState(false);
+
+  const [disableCreate, setDisableCreate] = useState(false);
+
+  useEffect(() => {
+    setDisableCreate(!canSubmit || loading);
+  }, [canSubmit, loading]);
 
   const onSubmit = handleSubmit(
     async (val) => {
+      setLoading(true);
       console.log(val);
       const { title, description, file } = val;
       if (file?.length === 0) {
@@ -46,9 +54,11 @@ export default function CreateCertificateForm() {
       await resp?.wait();
 
       console.log("Certificate created");
+      setLoading(false);
     },
     (val) => {
       console.log(val);
+      setLoading(false);
     },
   );
 
@@ -89,8 +99,8 @@ export default function CreateCertificateForm() {
         <div className="flex items-center space-x-2">
           <Checkbox
             id="submitEnable"
-            onCheckedChange={(checked) => setSubmitEnable(checked as boolean)}
-            checked={submitEnable}
+            onCheckedChange={(checked) => setCanSubmit(checked as boolean)}
+            checked={canSubmit}
           />
           <div className="grid gap-1.5 leading-none">
             <Label htmlFor="submitEnable" className="text-sm">
@@ -103,7 +113,7 @@ export default function CreateCertificateForm() {
           </div>
         </div>
         <p>URL : {import.meta.env.VITE_PINATA_GATEWAY}</p>
-        <Button type="submit" disabled={!submitEnable}>
+        <Button type="submit" disabled={disableCreate}>
           Create
         </Button>
       </form>

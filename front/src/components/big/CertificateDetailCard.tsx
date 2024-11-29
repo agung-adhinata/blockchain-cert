@@ -75,7 +75,7 @@ export function CertificateDetailCard({
         </h1>
       ) : certificate ? (
         <div className="flex flex-col gap-2">
-          <section className="w-full overflow-hidden">
+          <section className="w-full overflow-hidden rounded min-h-[200px] bg-black/10">
             <img
               src={image}
               alt={certificate.title}
@@ -98,10 +98,10 @@ export function CertificateDetailCard({
           </section>
           <h1 className="text-xl font-bold">{certificate.title}</h1>
           <div>
-            <p className="font-bold">Description: </p>
-            <p>{certificate.description}</p>
+            <p className="font-semibold font-mono">DESCRIPTION: </p>
+            <p className="text-muted-foreground">{certificate.description}</p>
           </div>
-          <p>{certificate.ipfsHash}</p>
+          {/* <p>{certificate.ipfsHash}</p> */}
           <HorizontalDivider />
           <div className="flex gap-2">
             <Button asChild>
