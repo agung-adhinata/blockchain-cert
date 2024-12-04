@@ -13,7 +13,9 @@ function App() {
       <Route element={<RootLayout />}>
         <Route index element={<HomeScreen />} />
         <Route path="/certificates" element={<CertificatesScreen />} />
-        <Route path="/certificates/:id" element={<CertificateDetailScreen />} />
+        <Route path="/certificates/:id" element={<CertificateDetailScreen />} errorElement={<div>
+          <h1>Certificate not found</h1>
+        </div>} />
 
         <Route
           path="/certificates/create"

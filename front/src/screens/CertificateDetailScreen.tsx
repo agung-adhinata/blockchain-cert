@@ -31,10 +31,22 @@ export default function CertificateDetailScreen() {
   }, [etherContext, fetchCertificate, id]);
 
   return (
-    <div className="flex items-center justify-between h-full w-full gap-4">
+    <div className="flex h-full w-full items-center justify-between gap-4">
       <div></div>
-      {id ? <CertificateDetailCard certificateId={id} /> : <></>}
-      {rootId && id ? <CertificateHistoryCard rootId={rootId} currentId={id} /> : <></>}
+      {rootId ? (
+        <>
+          {id ? <CertificateDetailCard certificateId={id} /> : <></>}
+          {rootId && id ? (
+            <CertificateHistoryCard rootId={rootId} currentId={id} />
+          ) : (
+            <></>
+          )}
+        </>
+      ) : (
+        <>
+          <span className="w-full flex items-center justify-center">Certificate not found</span>
+        </>
+      )}
     </div>
   );
 }

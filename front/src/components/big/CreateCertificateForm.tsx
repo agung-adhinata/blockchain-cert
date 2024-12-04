@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ethersContext } from "@/context/EthersContext";
 import { useContext, useEffect, useState } from "react";
-import { set, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "../ui/checkbox";
 import { ipfs } from "@/lib/ipfs";
@@ -35,9 +35,16 @@ export default function CreateCertificateForm() {
         console.log("No file selected");
         throw new Error("No file selected");
       }
+
       const currentFile = file?.[0];
+      const id = "ECERT-" + (Math.random() * 1000).toString() 
       console.log("Uploading file", currentFile?.name);
-      const upload = await ipfs.upload.file(currentFile as unknown as File);
+
+      const renamedFile = new File([currentFile as Blob], `${id}`, {
+        type: currentFile?.type
+      })
+
+      const upload = await ipfs.upload.file(renamedFile);
       if (!upload) {
         console.error("Failed to upload file", upload);
         throw new Error("Failed to upload file");
@@ -46,7 +53,7 @@ export default function CreateCertificateForm() {
       console.log("File uploaded", upload.IpfsHash);
 
       const resp = await etherContext?.contract?.signCertificate(
-        "0x123" + (Math.random() * 1000).toString(),
+        id,
         upload.IpfsHash,
         title,
         description,

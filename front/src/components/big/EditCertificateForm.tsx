@@ -38,14 +38,18 @@ export function EditCertificateForm(props: EditCertificateFormProps) {
       try {
         const { title, description, file } = val;
         const filename = file?.[0];
+        const newID = "ECERT" + (Math.random() * 1000).toString();
 
         if (!etherContext) return;
         if (filename) {
-          const ipfsHash = await ipfs.upload.file(filename);
+          const renamedFile = new File([filename as Blob], `${newID}`, {
+            type: filename?.type,
+          });
+          const ipfsHash = await ipfs.upload.file(renamedFile);
 
           await etherContext?.contract?.editCertificate(
             props.certificate.rootId,
-            "0x123" + (Math.random() * 1000).toString(),
+            newID,
             ipfsHash.IpfsHash,
             title,
             description,
@@ -56,7 +60,7 @@ export function EditCertificateForm(props: EditCertificateFormProps) {
 
         await etherContext?.contract?.editCertificate(
           props.certificate.rootId,
-          "0x123" + (Math.random() * 1000).toString(),
+          newID,
           props.certificate.ipfsHash,
           title,
           description,
