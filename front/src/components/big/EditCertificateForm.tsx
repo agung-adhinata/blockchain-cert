@@ -112,7 +112,7 @@ export function EditCertificateForm(props: EditCertificateFormProps) {
         </div>
         <div className="flex flex-col gap-1">
           <Label htmlFor="description">Description</Label>
-          <Textarea id="description" {...register("description")} />
+          <Textarea required id="description" {...register("description")} />
         </div>
         <div className="flex flex-col gap-1">
           <Label htmlFor="file">File</Label>
@@ -122,6 +122,7 @@ export function EditCertificateForm(props: EditCertificateFormProps) {
             {...register("file")}
             accept=".jpg,.png,.jpeg,.webp"
           />
+          <p className="text-muted-foreground">Optional, use it only if you want to change the certificate file</p>
         </div>
         <Button disabled={loading} type="submit">
           Edit

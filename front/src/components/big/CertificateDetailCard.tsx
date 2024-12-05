@@ -6,6 +6,7 @@ import { Link } from "react-router";
 import { dateFromTimestamp } from "@/lib/utils";
 import { getPinataImage } from "@/lib/ipfs";
 import { useToast } from "@/hooks/use-toast";
+import { Download } from "lucide-react";
 
 export function CertificateDetailCard({
   certificateId,
@@ -17,6 +18,29 @@ export function CertificateDetailCard({
   const [loading, setLoading] = useState(true);
   const [image, setImage] = useState<string | undefined>();
   const [certificate, setCertificate] = useState<Certificate | undefined>();
+
+  const downloadImage = useCallback(async () => {
+    if(!image){
+      toast({
+        title: "Failed to download image",
+        description: "Image not found",
+        variant: "destructive",
+        duration: 10000,
+      });
+      return;
+    }
+    const img = await fetch(image);
+    const file = await img.blob();
+    const downloadUrl = URL.createObjectURL(file);
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.download = `${certificateId}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(downloadUrl);
+  }, [certificateId, image, toast]);
 
   // const fetchImage = useCallback(async () => {
   //   if (!certificate) return;
@@ -108,6 +132,10 @@ export function CertificateDetailCard({
               <Link to={"/certificates/edit/" + certificate.id}>
                 Edit Certificate
               </Link>
+            </Button>
+            <Button onClick={downloadImage} variant={"outline"} disabled={!image}>
+              <Download size={16} />
+              Download
             </Button>
           </div>
         </div>

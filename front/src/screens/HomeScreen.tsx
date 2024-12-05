@@ -19,12 +19,12 @@ export default function HomeScreen() {
           value={certId}
           onChange={(e) => setCertId(e.target.value)}
         />
-        <Button asChild size={"icon"} variant={"default"}>
+        <Button asChild size={"icon"} variant={"default"} className="min-w-9 min-h-9">
           <Link to={`/certificates/${certId}`}>
             <Search />
           </Link>
         </Button>
-        <Button asChild variant={"ghost"}>
+        <Button asChild variant={"outline"}>
           <Link to="/certificates">Certificates</Link>
         </Button>
       </div>
