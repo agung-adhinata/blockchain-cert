@@ -119,7 +119,7 @@ export default function CreateCertificateForm() {
             </p>
           </div>
         </div>
-        <p>URL : {import.meta.env.VITE_PINATA_GATEWAY}</p>
+        {/* <p>URL : {import.meta.env.VITE_PINATA_GATEWAY}</p> */}
         <Button type="submit" disabled={disableCreate}>
           Create
         </Button>
