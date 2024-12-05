@@ -62,9 +62,7 @@ export function EthersProvider({
           );
           toast({
             title: "Certificate Signed",
-            description: `Certificate with id ${JSON.stringify(
-              prevId
-            )} has been signed`,
+            description: `Certificate has been signed`,
             duration: 5000,
             variant: "default",
           });
